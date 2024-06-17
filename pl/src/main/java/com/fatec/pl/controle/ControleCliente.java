@@ -1,7 +1,6 @@
 package com.fatec.pl.controle;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +18,6 @@ import com.fatec.pl.hateoas.HateoasCliente;
 import com.fatec.pl.modelo.Cliente;
 import com.fatec.pl.repositorio.RepositorioCliente;
 
-@CrossOrigin
 @RestController
 public class ControleCliente {
 	@Autowired
@@ -31,12 +29,12 @@ public class ControleCliente {
 
 	@GetMapping("/cliente/{id}")
 	public ResponseEntity<Cliente> obterCliente(@PathVariable Long id) {
-		Cliente cliente = repositorio.findById(id).get();
+		Cliente cliente = repositorio.findById(id).orElse(null);
 		if (cliente != null) {
 			hateoas.adicionarLink(cliente);
-			return new ResponseEntity<Cliente>(cliente, HttpStatus.FOUND);
+			return new ResponseEntity<>(cliente, HttpStatus.FOUND);
 		} else {
-			return new ResponseEntity<Cliente>(HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
 
@@ -44,14 +42,13 @@ public class ControleCliente {
 	public ResponseEntity<List<Cliente>> obterClientes() {
 		List<Cliente> clientes = repositorio.findAll();
 		hateoas.adicionarLink(clientes);
-		return new ResponseEntity<List<Cliente>>(clientes, HttpStatus.FOUND);
+		return new ResponseEntity<>(clientes, HttpStatus.FOUND);
 	}
 
-	@SuppressWarnings("deprecation")
 	@PutMapping("/cliente/atualizar")
 	public ResponseEntity<?> atualizarCliente(@RequestBody Cliente atualizacao) {
 		HttpStatus status = HttpStatus.BAD_REQUEST;
-		Cliente cliente = repositorio.getById(atualizacao.getId());
+		Cliente cliente = repositorio.findById(atualizacao.getId()).orElse(null);
 		if (cliente != null) {
 			atualizador.atualizar(cliente, atualizacao);
 			repositorio.save(cliente);
@@ -70,10 +67,9 @@ public class ControleCliente {
 		return new ResponseEntity<>(status);
 	}
 
-	@SuppressWarnings("deprecation")
 	@DeleteMapping("/cliente/excluir")
 	public ResponseEntity<?> excluirCliente(@RequestBody Cliente exclusao) {
-		Cliente cliente = repositorio.getById(exclusao.getId());
+		Cliente cliente = repositorio.findById(exclusao.getId()).orElse(null);
 		if (cliente == null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		} else {
